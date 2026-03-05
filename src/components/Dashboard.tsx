@@ -8,18 +8,23 @@ import { GameCarousel } from './GameCarousel';
 import { UserStats } from './UserStats';
 import { TicTacToe } from './TicTacToe';
 import { AvatarStore } from './AvatarStore';
+import { Minesweeper } from './Minesweeper';
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
-type ViewState = 'home' | 'store' | 'tictactoe';
+type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper';
 
 export function Dashboard({ onLogout }: DashboardProps) {
   const [activeView, setActiveView] = useState<ViewState>('home');
 
   if (activeView === 'tictactoe') {
     return <TicTacToe onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'minesweeper') {
+    return <Minesweeper onBack={() => setActiveView('home')} />;
   }
 
   if (activeView === 'store') {
@@ -52,7 +57,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 space-y-24">
           <DashboardHero onPlay={() => setActiveView('tictactoe')} />
-          <GameCarousel onSelectGame={(id) => setActiveView('tictactoe')} />
+          <GameCarousel onSelectGame={(id) => setActiveView(id as ViewState)} />
           <UserStats />
         </main>
       </div>

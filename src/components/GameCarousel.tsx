@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Play, BrainCircuit, Users, Puzzle, Ghost, Flame } from 'lucide-react';
+import { Play, BrainCircuit, Users, Puzzle, Ghost, Flame, Bomb } from 'lucide-react';
 import { useState } from 'react';
 
 const filters = [
@@ -11,37 +11,37 @@ const filters = [
 
 const games = [
   {
-    id: 1,
+    id: 'tictactoe',
+    title: 'Tic Tac Toe AI',
+    category: 'puzzle',
+    image: 'https://images.unsplash.com/photo-1611996575749-79a3a250f563?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Variável',
+    aiLevel: 99,
+    players: '12k online',
+    color: 'from-purple-500 to-indigo-500'
+  },
+  {
+    id: 'minesweeper',
+    title: 'Cyber Breach (Minado)',
+    category: 'puzzle',
+    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Difícil',
+    aiLevel: 85,
+    players: '8.4k online',
+    color: 'from-cyan-500 to-blue-500'
+  },
+  {
+    id: 'pacman',
     title: 'Neon Pac-Man',
     category: 'arcade',
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
     difficulty: 'Médio',
     aiLevel: 65,
     players: '1.2k online',
-    color: 'from-purple-500 to-indigo-500'
-  },
-  {
-    id: 2,
-    title: 'Cyber Chess',
-    category: 'puzzle',
-    image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Difícil',
-    aiLevel: 92,
-    players: '8.4k online',
-    color: 'from-cyan-500 to-blue-500'
-  },
-  {
-    id: 3,
-    title: 'Retro Kart',
-    category: 'multiplayer',
-    image: 'https://images.unsplash.com/photo-1611996575749-79a3a250f563?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Fácil',
-    aiLevel: 30,
-    players: '12k online',
     color: 'from-pink-500 to-rose-500'
   },
   {
-    id: 4,
+    id: 'spaceinvaders',
     title: 'Space Invaders 3D',
     category: 'arcade',
     image: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
@@ -53,7 +53,7 @@ const games = [
 ];
 
 interface GameCarouselProps {
-  onSelectGame: (id: number) => void;
+  onSelectGame: (id: string) => void;
 }
 
 export function GameCarousel({ onSelectGame }: GameCarouselProps) {
