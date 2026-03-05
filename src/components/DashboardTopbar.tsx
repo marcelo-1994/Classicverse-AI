@@ -1,0 +1,72 @@
+import { motion } from 'motion/react';
+import { Gamepad2, Bell, Search, LogOut } from 'lucide-react';
+
+interface DashboardTopbarProps {
+  onLogout: () => void;
+}
+
+export function DashboardTopbar({ onLogout }: DashboardTopbarProps) {
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/10 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-2"
+          >
+            <Gamepad2 className="w-8 h-8 text-purple-500" />
+            <span className="font-display font-bold text-2xl tracking-tight hidden sm:block">
+              CLASSICVERSE <span className="text-gradient">AI</span>
+            </span>
+          </motion.div>
+          
+          {/* Minimal Menu */}
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#" className="text-white font-medium hover:text-purple-400 transition-colors">Início</a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Biblioteca</a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Comunidade</a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Torneios</a>
+          </div>
+          
+          {/* Right Actions */}
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer">
+              <Search className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-gray-400 hover:text-white transition-colors relative cursor-pointer">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
+            </button>
+            
+            <div className="h-8 w-px bg-white/10 mx-2"></div>
+            
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">PlayerOne</p>
+                <p className="text-xs text-gray-400">Nível 42</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 p-0.5">
+                <img 
+                  src="https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&q=80&w=100" 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover border-2 border-black"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={onLogout}
+              className="p-2 text-gray-400 hover:text-red-400 transition-colors cursor-pointer ml-2"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
