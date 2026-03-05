@@ -1,11 +1,12 @@
 import { motion } from 'motion/react';
-import { Gamepad2, Bell, Search, LogOut, Sparkles } from 'lucide-react';
+import { Gamepad2, Bell, Search, LogOut, Sparkles, ShoppingBag } from 'lucide-react';
 
 interface DashboardTopbarProps {
   onLogout: () => void;
+  onOpenStore: () => void;
 }
 
-export function DashboardTopbar({ onLogout }: DashboardTopbarProps) {
+export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/10 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,7 +27,9 @@ export function DashboardTopbar({ onLogout }: DashboardTopbarProps) {
           <div className="hidden md:flex items-center gap-8">
             <a href="#" className="text-white font-medium hover:text-purple-400 transition-colors">Início</a>
             <a href="#" className="text-gray-400 hover:text-white transition-colors">Biblioteca</a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Comunidade</a>
+            <button onClick={onOpenStore} className="text-gray-400 hover:text-purple-400 transition-colors flex items-center gap-2 cursor-pointer">
+              <ShoppingBag className="w-4 h-4" /> Loja
+            </button>
             <a href="#" className="text-gray-400 hover:text-white transition-colors">Torneios</a>
           </div>
           
@@ -36,6 +39,10 @@ export function DashboardTopbar({ onLogout }: DashboardTopbarProps) {
             <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 hover:border-orange-500/60 transition-all group cursor-pointer">
               <Sparkles className="w-4 h-4 text-orange-400 group-hover:animate-pulse" />
               <span className="text-sm font-bold text-orange-100 group-hover:text-white">AjudaAí Plus</span>
+            </button>
+
+            <button onClick={onOpenStore} className="md:hidden p-2 text-gray-400 hover:text-purple-400 transition-colors cursor-pointer">
+              <ShoppingBag className="w-5 h-5" />
             </button>
 
             <button className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer">

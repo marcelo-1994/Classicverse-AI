@@ -7,16 +7,23 @@ import { DashboardHero } from './DashboardHero';
 import { GameCarousel } from './GameCarousel';
 import { UserStats } from './UserStats';
 import { TicTacToe } from './TicTacToe';
+import { AvatarStore } from './AvatarStore';
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
-export function Dashboard({ onLogout }: DashboardProps) {
-  const [activeGame, setActiveGame] = useState<string | null>(null);
+type ViewState = 'home' | 'store' | 'tictactoe';
 
-  if (activeGame === 'tictactoe') {
-    return <TicTacToe onBack={() => setActiveGame(null)} />;
+export function Dashboard({ onLogout }: DashboardProps) {
+  const [activeView, setActiveView] = useState<ViewState>('home');
+
+  if (activeView === 'tictactoe') {
+    return <TicTacToe onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'store') {
+    return <AvatarStore onBack={() => setActiveView('home')} />;
   }
 
   return (
@@ -41,11 +48,11 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
       {/* Content */}
       <div className="relative z-10 h-screen overflow-y-auto scrollbar-hide">
-        <DashboardTopbar onLogout={onLogout} />
+        <DashboardTopbar onLogout={onLogout} onOpenStore={() => setActiveView('store')} />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 space-y-24">
-          <DashboardHero onPlay={() => setActiveGame('tictactoe')} />
-          <GameCarousel onSelectGame={(id) => setActiveGame('tictactoe')} />
+          <DashboardHero onPlay={() => setActiveView('tictactoe')} />
+          <GameCarousel onSelectGame={(id) => setActiveView('tictactoe')} />
           <UserStats />
         </main>
       </div>
