@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Gamepad2, Bell, Search, LogOut, Sparkles, ShoppingBag } from 'lucide-react';
+import { Gamepad2, Bell, Search, LogOut, Sparkles, ShoppingBag, Download } from 'lucide-react';
 
 interface DashboardTopbarProps {
   onLogout: () => void;
@@ -7,6 +8,27 @@ interface DashboardTopbarProps {
 }
 
 export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps) {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/10 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,6 +57,17 @@ export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps)
           
           {/* Right Actions */}
           <div className="flex items-center gap-4">
+            {/* Install App Button (PWA) */}
+            {deferredPrompt && (
+              <button 
+                onClick={handleInstallClick}
+                className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 hover:border-cyan-500/60 transition-all group cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-cyan-400 group-hover:animate-bounce" />
+                <span className="text-sm font-bold text-cyan-100 group-hover:text-white">Instalar App</span>
+              </button>
+            )}
+
             {/* AjudaAí Integration Button */}
             <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 hover:border-orange-500/60 transition-all group cursor-pointer">
               <Sparkles className="w-4 h-4 text-orange-400 group-hover:animate-pulse" />
