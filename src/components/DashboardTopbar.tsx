@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Gamepad2, Bell, Search, LogOut } from 'lucide-react';
+import { Gamepad2, Bell, Search, LogOut, Sparkles } from 'lucide-react';
 
 interface DashboardTopbarProps {
   onLogout: () => void;
@@ -32,6 +32,12 @@ export function DashboardTopbar({ onLogout }: DashboardTopbarProps) {
           
           {/* Right Actions */}
           <div className="flex items-center gap-4">
+            {/* AjudaAí Integration Button */}
+            <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 hover:border-orange-500/60 transition-all group cursor-pointer">
+              <Sparkles className="w-4 h-4 text-orange-400 group-hover:animate-pulse" />
+              <span className="text-sm font-bold text-orange-100 group-hover:text-white">AjudaAí Plus</span>
+            </button>
+
             <button className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer">
               <Search className="w-5 h-5" />
             </button>

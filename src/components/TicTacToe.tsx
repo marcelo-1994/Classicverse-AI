@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Trophy, RotateCcw, BrainCircuit } from 'lucide-react';
+import { ArrowLeft, Trophy, RotateCcw, BrainCircuit, Settings2 } from 'lucide-react';
 
 interface TicTacToeProps {
   onBack: () => void;
@@ -8,6 +8,7 @@ interface TicTacToeProps {
 
 type Player = 'X' | 'O' | null;
 type BoardState = Player[];
+type Difficulty = 'easy' | 'medium' | 'hard';
 
 export function TicTacToe({ onBack }: TicTacToeProps) {
   const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
@@ -15,6 +16,7 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
   const [winner, setWinner] = useState<Player | 'Draw'>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const [score, setScore] = useState({ player: 0, ai: 0 });
+  const [difficulty, setDifficulty] = useState<Difficulty>('hard');
 
   // Winning combinations
   const lines = [
@@ -34,41 +36,87 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
     return null;
   }, []);
 
-  // Simple AI logic (Minimax could be used for unbeatable AI, but let's make it slightly beatable for fun)
+  // Minimax Algorithm for unbeatable AI
+  const minimax = useCallback((currentBoard: BoardState, depth: number, isMaximizing: boolean): number => {
+    const result = checkWinner(currentBoard);
+    if (result === 'O') return 10 - depth;
+    if (result === 'X') return depth - 10;
+    if (result === 'Draw') return 0;
+
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!currentBoard[i]) {
+          currentBoard[i] = 'O';
+          const score = minimax(currentBoard, depth + 1, false);
+          currentBoard[i] = null;
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!currentBoard[i]) {
+          currentBoard[i] = 'X';
+          const score = minimax(currentBoard, depth + 1, true);
+          currentBoard[i] = null;
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+  }, [checkWinner]);
+
   const makeAIMove = useCallback((currentBoard: BoardState) => {
     setAiThinking(true);
     
     setTimeout(() => {
       let moveIndex = -1;
       
-      // 1. Try to win
-      for (let i = 0; i < lines.length; i++) {
-        const [a, b, c] = lines[i];
-        if (currentBoard[a] === 'O' && currentBoard[b] === 'O' && !currentBoard[c]) moveIndex = c;
-        if (currentBoard[a] === 'O' && !currentBoard[b] && currentBoard[c] === 'O') moveIndex = b;
-        if (!currentBoard[a] && currentBoard[b] === 'O' && currentBoard[c] === 'O') moveIndex = a;
-      }
-
-      // 2. Try to block
-      if (moveIndex === -1) {
-        for (let i = 0; i < lines.length; i++) {
-          const [a, b, c] = lines[i];
-          if (currentBoard[a] === 'X' && currentBoard[b] === 'X' && !currentBoard[c]) moveIndex = c;
-          if (currentBoard[a] === 'X' && !currentBoard[b] && currentBoard[c] === 'X') moveIndex = b;
-          if (!currentBoard[a] && currentBoard[b] === 'X' && currentBoard[c] === 'X') moveIndex = a;
-        }
-      }
-
-      // 3. Take center
-      if (moveIndex === -1 && !currentBoard[4]) {
-        moveIndex = 4;
-      }
-
-      // 4. Take random available
-      if (moveIndex === -1) {
+      if (difficulty === 'easy') {
+        // Random move
         const available = currentBoard.map((val, idx) => val === null ? idx : null).filter(val => val !== null) as number[];
         if (available.length > 0) {
           moveIndex = available[Math.floor(Math.random() * available.length)];
+        }
+      } else if (difficulty === 'medium') {
+        // 1. Try to win
+        for (let i = 0; i < lines.length; i++) {
+          const [a, b, c] = lines[i];
+          if (currentBoard[a] === 'O' && currentBoard[b] === 'O' && !currentBoard[c]) moveIndex = c;
+          if (currentBoard[a] === 'O' && !currentBoard[b] && currentBoard[c] === 'O') moveIndex = b;
+          if (!currentBoard[a] && currentBoard[b] === 'O' && currentBoard[c] === 'O') moveIndex = a;
+        }
+        // 2. Try to block
+        if (moveIndex === -1) {
+          for (let i = 0; i < lines.length; i++) {
+            const [a, b, c] = lines[i];
+            if (currentBoard[a] === 'X' && currentBoard[b] === 'X' && !currentBoard[c]) moveIndex = c;
+            if (currentBoard[a] === 'X' && !currentBoard[b] && currentBoard[c] === 'X') moveIndex = b;
+            if (!currentBoard[a] && currentBoard[b] === 'X' && currentBoard[c] === 'X') moveIndex = a;
+          }
+        }
+        // 3. Take center
+        if (moveIndex === -1 && !currentBoard[4]) moveIndex = 4;
+        // 4. Random
+        if (moveIndex === -1) {
+          const available = currentBoard.map((val, idx) => val === null ? idx : null).filter(val => val !== null) as number[];
+          if (available.length > 0) moveIndex = available[Math.floor(Math.random() * available.length)];
+        }
+      } else {
+        // Hard: Minimax (Unbeatable)
+        let bestScore = -Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (!currentBoard[i]) {
+            currentBoard[i] = 'O';
+            const score = minimax(currentBoard, 0, false);
+            currentBoard[i] = null;
+            if (score > bestScore) {
+              bestScore = score;
+              moveIndex = i;
+            }
+          }
         }
       }
 
@@ -86,7 +134,7 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
       }
       setAiThinking(false);
     }, 600); // Fake thinking delay
-  }, [checkWinner]);
+  }, [checkWinner, difficulty, minimax]);
 
   const handleClick = (index: number) => {
     if (board[index] || winner || !isXNext || aiThinking) return;
@@ -111,33 +159,56 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
     setWinner(null);
   };
 
+  const handleDifficultyChange = (newDiff: Difficulty) => {
+    setDifficulty(newDiff);
+    resetGame();
+    setScore({ player: 0, ai: 0 });
+  };
+
   return (
     <div className="absolute inset-0 z-[60] bg-[#050505] flex flex-col items-center justify-center">
       {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center glass-panel border-b border-white/10">
+      <div className="absolute top-0 left-0 right-0 p-6 flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel border-b border-white/10">
         <button 
           onClick={onBack}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Voltar ao Dashboard</span>
+          <span className="hidden sm:inline">Voltar ao Dashboard</span>
         </button>
         
+        <div className="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-white/10">
+          <Settings2 className="w-4 h-4 text-gray-400 ml-2" />
+          {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => (
+            <button
+              key={diff}
+              onClick={() => handleDifficultyChange(diff)}
+              className={`px-3 py-1 rounded-full text-xs font-bold uppercase transition-all cursor-pointer ${
+                difficulty === diff 
+                  ? diff === 'hard' ? 'bg-pink-500 text-white shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'bg-purple-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {diff === 'easy' ? 'Fácil' : diff === 'medium' ? 'Médio' : 'Impossível'}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-cyan-400 font-bold">Você (X)</span>
+            <span className="text-cyan-400 font-bold hidden sm:inline">Você (X)</span>
             <span className="font-display text-2xl font-bold">{score.player}</span>
           </div>
           <span className="text-gray-600">-</span>
           <div className="flex items-center gap-2">
             <span className="font-display text-2xl font-bold">{score.ai}</span>
-            <span className="text-purple-400 font-bold">IA (O)</span>
+            <span className="text-purple-400 font-bold hidden sm:inline">IA (O)</span>
           </div>
         </div>
       </div>
 
       {/* Game Area */}
-      <div className="flex flex-col items-center mt-16">
+      <div className="flex flex-col items-center mt-24 sm:mt-16">
         <div className="mb-8 text-center h-12">
           {winner ? (
             <motion.div 
@@ -155,7 +226,7 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
               {aiThinking ? (
                 <>
                   <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
-                  <span className="text-purple-400">A IA está pensando...</span>
+                  <span className="text-purple-400">A IA está calculando...</span>
                 </>
               ) : (
                 <span>Sua vez de jogar</span>
@@ -194,7 +265,7 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
           animate={{ opacity: winner ? 1 : 0, y: winner ? 0 : 20 }}
           onClick={resetGame}
           className={`mt-10 px-8 py-3 rounded-full font-bold flex items-center gap-2 transition-all cursor-pointer ${
-            winner ? 'bg-white text-black hover:bg-gray-200' : 'pointer-events-none'
+            winner ? 'bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'pointer-events-none'
           }`}
         >
           <RotateCcw className="w-5 h-5" />

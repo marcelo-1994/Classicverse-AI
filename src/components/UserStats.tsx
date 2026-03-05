@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Target, Medal, Coins, Activity, Zap, Shield, Sword } from 'lucide-react';
+import { Target, Medal, Coins, Activity, Zap, Shield, Sword, Sparkles } from 'lucide-react';
 
 const stats = [
   { label: 'Moedas Acumuladas', value: '2.450', icon: Coins, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
@@ -47,35 +47,73 @@ export function UserStats() {
           </div>
         </div>
 
-        {/* Active Challenges */}
-        <div>
-          <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
-            <Target className="w-6 h-6 text-pink-500" />
-            Desafios <span className="text-gradient-pink">Ativos</span>
-          </h2>
-          <div className="space-y-4">
-            {[
-              { title: 'Derrote a IA no Xadrez (Nível 80+)', progress: 0, total: 1, reward: '500 Moedas' },
-              { title: 'Jogue 5 partidas Multiplayer', progress: 3, total: 5, reward: 'Badge Especial' },
-            ].map((challenge, idx) => (
-              <div key={idx} className="glass-panel p-6 rounded-2xl border border-white/10">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-lg">{challenge.title}</h3>
-                  <span className="text-sm font-medium text-pink-400 bg-pink-400/10 px-3 py-1 rounded-full">
-                    {challenge.reward}
-                  </span>
+        {/* Active Challenges & AjudaAí Integration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+              <Target className="w-6 h-6 text-pink-500" />
+              Desafios <span className="text-gradient-pink">Ativos</span>
+            </h2>
+            <div className="space-y-4">
+              {[
+                { title: 'Derrote a IA no Xadrez', progress: 0, total: 1, reward: '500 Moedas' },
+                { title: 'Jogue 5 partidas', progress: 3, total: 5, reward: 'Badge' },
+              ].map((challenge, idx) => (
+                <div key={idx} className="glass-panel p-4 rounded-2xl border border-white/10">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-sm">{challenge.title}</h3>
+                    <span className="text-xs font-medium text-pink-400 bg-pink-400/10 px-2 py-1 rounded-full">
+                      {challenge.reward}
+                    </span>
+                  </div>
+                  <div className="w-full bg-white/5 rounded-full h-2 mb-1">
+                    <div 
+                      className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full transition-all duration-1000" 
+                      style={{ width: `${(challenge.progress / challenge.total) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-right text-[10px] text-gray-400 font-mono">
+                    {challenge.progress} / {challenge.total}
+                  </p>
                 </div>
-                <div className="w-full bg-white/5 rounded-full h-2.5 mb-2">
-                  <div 
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 h-2.5 rounded-full transition-all duration-1000" 
-                    style={{ width: `${(challenge.progress / challenge.total) * 100}%` }}
-                  ></div>
+              ))}
+            </div>
+          </div>
+
+          {/* AjudaAí Integration Card */}
+          <div>
+            <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-orange-400" />
+              Benefícios <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">AjudaAí</span>
+            </h2>
+            <div className="glass-panel p-6 rounded-3xl border border-orange-500/30 relative overflow-hidden h-[calc(100%-3.5rem)] flex flex-col justify-between">
+              <div className="absolute -right-10 -top-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl"></div>
+              
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-300 text-xs font-bold mb-4">
+                  <Sparkles className="w-3 h-3" /> Conta Vinculada
                 </div>
-                <p className="text-right text-xs text-gray-400 font-mono">
-                  {challenge.progress} / {challenge.total}
-                </p>
+                <h3 className="text-xl font-bold mb-2">Bônus de Ecossistema Ativo</h3>
+                <ul className="space-y-2 text-sm text-gray-300 mb-6">
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                    +20% de XP em todas as partidas
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                    Dicas avançadas da IA liberadas
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+                    Moedas sincronizadas com o app
+                  </li>
+                </ul>
               </div>
-            ))}
+              
+              <button className="w-full py-3 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)] relative z-10 cursor-pointer">
+                Gerenciar Conexão
+              </button>
+            </div>
           </div>
         </div>
       </div>
