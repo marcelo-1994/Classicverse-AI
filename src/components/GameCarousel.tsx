@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Play, BrainCircuit, Users, Puzzle, Ghost, Flame, Bomb } from 'lucide-react';
+import { Play, BrainCircuit, Users, Puzzle, Ghost, Flame, Bomb, Swords, Rocket, Gamepad2 } from 'lucide-react';
 import { useState } from 'react';
 
 const filters = [
@@ -11,44 +11,59 @@ const filters = [
 
 const games = [
   {
-    id: 'tictactoe',
-    title: 'Tic Tac Toe AI',
-    category: 'puzzle',
-    image: 'https://images.unsplash.com/photo-1611996575749-79a3a250f563?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Variável',
-    aiLevel: 99,
-    players: '12k online',
-    color: 'from-purple-500 to-indigo-500'
-  },
-  {
-    id: 'minesweeper',
-    title: 'Cyber Breach (Minado)',
-    category: 'puzzle',
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Difícil',
-    aiLevel: 85,
-    players: '8.4k online',
-    color: 'from-cyan-500 to-blue-500'
-  },
-  {
-    id: 'pacman',
-    title: 'Neon Pac-Man',
+    id: 'arcademaze',
+    title: 'Arcade Maze AI',
     category: 'arcade',
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Médio',
-    aiLevel: 65,
+    difficulty: 'Adaptativa',
+    aiLevel: 80,
     players: '1.2k online',
-    color: 'from-pink-500 to-rose-500'
+    color: 'from-purple-500 to-indigo-500',
+    icon: Ghost
   },
   {
-    id: 'spaceinvaders',
-    title: 'Space Invaders 3D',
+    id: 'blockpuzzle',
+    title: 'Block Puzzle',
+    category: 'puzzle',
+    image: 'https://images.unsplash.com/photo-1614624532983-4ce03382d63d?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Crescente',
+    aiLevel: 60,
+    players: '8.4k online',
+    color: 'from-cyan-500 to-blue-500',
+    icon: Puzzle
+  },
+  {
+    id: 'chess',
+    title: 'Xadrez Inteligente',
+    category: 'puzzle',
+    image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Adaptativa',
+    aiLevel: 99,
+    players: '12k online',
+    color: 'from-emerald-500 to-teal-500',
+    icon: BrainCircuit
+  },
+  {
+    id: 'spaceshooter',
+    title: 'Space Shooter Retrô',
     category: 'arcade',
     image: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Insano',
-    aiLevel: 99,
+    difficulty: 'Adaptativa',
+    aiLevel: 85,
     players: '4.1k online',
-    color: 'from-emerald-500 to-teal-500'
+    color: 'from-pink-500 to-rose-500',
+    icon: Rocket
+  },
+  {
+    id: 'truco',
+    title: 'Truco Online',
+    category: 'multiplayer',
+    image: 'https://images.unsplash.com/photo-1605870445919-838d190e8e1b?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Multiplayer',
+    aiLevel: 0,
+    players: '25k online',
+    color: 'from-orange-500 to-red-500',
+    icon: Swords
   }
 ];
 
@@ -93,7 +108,7 @@ export function GameCarousel({ onSelectGame }: GameCarouselProps) {
       </div>
 
       {/* 3D-like Carousel */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {filteredGames.map((game, index) => (
           <motion.div
             key={game.id}
@@ -105,7 +120,7 @@ export function GameCarousel({ onSelectGame }: GameCarouselProps) {
             style={{ perspective: '1000px' }}
           >
             {/* Image Container with 3D rotation effect on hover */}
-            <div className="relative h-64 w-full overflow-hidden transition-transform duration-500 group-hover:rotate-x-12 group-hover:scale-105 origin-bottom">
+            <div className="relative h-48 w-full overflow-hidden transition-transform duration-500 group-hover:rotate-x-12 group-hover:scale-105 origin-bottom">
               <img 
                 src={game.image} 
                 alt={game.title} 
@@ -124,19 +139,26 @@ export function GameCarousel({ onSelectGame }: GameCarouselProps) {
             </div>
 
             {/* Content */}
-            <div className="p-6 relative z-10 bg-gradient-to-t from-[#050505] to-transparent -mt-20">
-              <h3 className="font-display text-xl font-bold mb-1 group-hover:text-purple-400 transition-colors">{game.title}</h3>
-              <p className="text-sm text-gray-400 mb-4">{game.players}</p>
+            <div className="p-5 relative z-10 bg-gradient-to-t from-[#050505] to-transparent -mt-16">
+              <h3 className="font-display text-lg font-bold mb-1 group-hover:text-purple-400 transition-colors truncate">{game.title}</h3>
+              <p className="text-xs text-gray-400 mb-3">{game.players}</p>
               
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BrainCircuit className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-mono text-cyan-200">IA Nível {game.aiLevel}</span>
+                <div className="flex items-center gap-1.5">
+                  {game.id === 'truco' ? (
+                    <Users className="w-4 h-4 text-orange-400" />
+                  ) : (
+                    <BrainCircuit className="w-4 h-4 text-cyan-400" />
+                  )}
+                  <span className={`text-[10px] font-mono ${game.id === 'truco' ? 'text-orange-200' : 'text-cyan-200'}`}>
+                    {game.id === 'truco' ? 'PvP Online' : `IA Lvl ${game.aiLevel}`}
+                  </span>
                 </div>
-                <span className={`text-xs font-bold px-2 py-1 rounded-md bg-white/10 ${
-                  game.difficulty === 'Fácil' ? 'text-emerald-400' :
-                  game.difficulty === 'Médio' ? 'text-yellow-400' :
-                  'text-red-400'
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-md bg-white/10 ${
+                  game.difficulty === 'Adaptativa' ? 'text-purple-400' :
+                  game.difficulty === 'Crescente' ? 'text-yellow-400' :
+                  game.difficulty === 'Multiplayer' ? 'text-orange-400' :
+                  'text-emerald-400'
                 }`}>
                   {game.difficulty}
                 </span>
