@@ -10,12 +10,13 @@ import { TicTacToe } from './TicTacToe';
 import { AvatarStore } from './AvatarStore';
 import { Minesweeper } from './Minesweeper';
 import { BlockPuzzle } from './BlockPuzzle';
+import { ArcadeMaze } from './ArcadeMaze';
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
-type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle';
+type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle' | 'arcademaze';
 
 export function Dashboard({ onLogout }: DashboardProps) {
   const [activeView, setActiveView] = useState<ViewState>('home');
@@ -30,6 +31,10 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
   if (activeView === 'blockpuzzle') {
     return <BlockPuzzle onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'arcademaze') {
+    return <ArcadeMaze onBack={() => setActiveView('home')} />;
   }
 
   if (activeView === 'store') {
