@@ -113,8 +113,8 @@ function Board3D({
         >
           <boxGeometry args={[1, 0.1, 1]} />
           <meshStandardMaterial 
-            color={isSelected ? "#065f46" : isDark ? "#111827" : "#374151"} 
-            roughness={0.5}
+            color={isSelected ? "#065f46" : isDark ? "#5d4037" : "#d7ccc8"} 
+            roughness={0.7}
           />
         </mesh>
       );
@@ -350,7 +350,21 @@ export function ChessGame({ onBack }: ChessGameProps) {
         <div className="aspect-square w-full max-w-2xl bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
           <Canvas shadows dpr={[1, 2]}>
             <Suspense fallback={null}>
-              <Scene game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
+              <PerspectiveCamera makeDefault position={[0, 10, 8]} fov={45} />
+              <OrbitControls enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.5} minDistance={5} maxDistance={15} />
+              <ambientLight intensity={0.6} />
+              <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
+              <Environment preset="city" />
+              
+              <Board3D game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
+              
+              {/* Reflective surface */}
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+                <planeGeometry args={[8, 8]} />
+                <meshStandardMaterial color="white" transparent opacity={0.1} roughness={0.1} metalness={0.1} />
+              </mesh>
+              
+              <ContactShadows position={[0, -0.05, 0]} opacity={0.4} scale={15} blur={2} far={10} />
             </Suspense>
           </Canvas>
         </div>
