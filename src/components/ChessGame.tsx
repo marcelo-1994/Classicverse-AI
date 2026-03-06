@@ -162,13 +162,31 @@ function Scene({ game, onSquareClick, selectedSquare }: { game: Chess, onSquareC
 // --- Main Component ---
 
 export function ChessGame({ onBack }: ChessGameProps) {
-  const [game, setGame] = useState(new Chess());
-  const [gameMode, setGameMode] = useState<GameMode>('pve');
+  const [game, setGame] = useState(() => {
+    const saved = localStorage.getItem('chess_game_state');
+    if (saved) {
+      const { fen } = JSON.parse(saved);
+      return new Chess(fen);
+    }
+    return new Chess();
+  });
+  const [gameMode, setGameMode] = useState<GameMode>(() => {
+    const saved = localStorage.getItem('chess_game_state');
+    if (saved) {
+      const { mode } = JSON.parse(saved);
+      return mode;
+    }
+    return 'pve';
+  });
   const [aiDifficulty, setAiDifficulty] = useState(50);
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
+  
+  useEffect(() => {
+    localStorage.setItem('chess_game_state', JSON.stringify({ fen: game.fen(), mode: gameMode }));
+  }, [game, gameMode]);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);

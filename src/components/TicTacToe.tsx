@@ -114,15 +114,49 @@ function Scene({ board, onCellClick, winningLine }: { board: BoardState, onCellC
 // --- Main Component ---
 
 export function TicTacToe({ onBack }: TicTacToeProps) {
-  const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
-  const [isXNext, setIsXNext] = useState<boolean>(true);
+  const [board, setBoard] = useState<BoardState>(() => {
+    const saved = localStorage.getItem('ttt_game_state');
+    if (saved) {
+      return JSON.parse(saved).board;
+    }
+    return Array(9).fill(null);
+  });
+  const [isXNext, setIsXNext] = useState<boolean>(() => {
+    const saved = localStorage.getItem('ttt_game_state');
+    if (saved) {
+      return JSON.parse(saved).isXNext;
+    }
+    return true;
+  });
   const [winner, setWinner] = useState<Player | 'Draw'>(null);
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
-  const [gameMode, setGameMode] = useState<'pve' | 'pvp'>('pve');
-  const [score, setScore] = useState({ player: 0, ai: 0 });
-  const [difficulty, setDifficulty] = useState<Difficulty>('hard');
+  const [gameMode, setGameMode] = useState<'pve' | 'pvp'>(() => {
+    const saved = localStorage.getItem('ttt_game_state');
+    if (saved) {
+      return JSON.parse(saved).mode;
+    }
+    return 'pve';
+  });
+  const [score, setScore] = useState(() => {
+    const saved = localStorage.getItem('ttt_game_state');
+    if (saved) {
+      return JSON.parse(saved).score;
+    }
+    return { player: 0, ai: 0 };
+  });
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => {
+    const saved = localStorage.getItem('ttt_game_state');
+    if (saved) {
+      return JSON.parse(saved).diff;
+    }
+    return 'hard';
+  });
   const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
+
+  useEffect(() => {
+    localStorage.setItem('ttt_game_state', JSON.stringify({ board, isXNext, score, mode: gameMode, diff: difficulty }));
+  }, [board, isXNext, score, gameMode, difficulty]);
 
   const toggleMode = () => {
     setGameMode(prev => prev === 'pve' ? 'pvp' : 'pve');
