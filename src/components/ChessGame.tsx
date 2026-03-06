@@ -346,12 +346,14 @@ export function ChessGame({ onBack }: ChessGameProps) {
       </div>
 
       {/* 3D Canvas */}
-      <div className="w-full flex-1 relative z-10">
-        <Canvas shadows dpr={[1, 2]}>
-          <Suspense fallback={null}>
-            <Scene game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
-          </Suspense>
-        </Canvas>
+      <div className="w-full flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="aspect-square w-full max-w-2xl bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
+          <Canvas shadows dpr={[1, 2]}>
+            <Suspense fallback={null}>
+              <Scene game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
+            </Suspense>
+          </Canvas>
+        </div>
       </div>
 
       {/* HUD Overlay */}
