@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Float, MeshDistortMaterial, PerspectiveCamera, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
-import { ArrowLeft, Trophy, RotateCcw, BrainCircuit, Settings2, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { ArrowLeft, Trophy, RotateCcw, BrainCircuit, Settings2, Volume2, VolumeX, Maximize, Users } from 'lucide-react';
 import { audio } from '../services/audioService';
 
 interface TicTacToeProps {
@@ -119,9 +119,16 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
   const [winner, setWinner] = useState<Player | 'Draw'>(null);
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
+  const [gameMode, setGameMode] = useState<'pve' | 'pvp'>('pve');
   const [score, setScore] = useState({ player: 0, ai: 0 });
   const [difficulty, setDifficulty] = useState<Difficulty>('hard');
   const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
+
+  const toggleMode = () => {
+    setGameMode(prev => prev === 'pve' ? 'pvp' : 'pve');
+    resetGame();
+    setScore({ player: 0, ai: 0 });
+  };
 
   const toggleSound = () => {
     setSoundEnabled(audio.toggleSound());
@@ -272,11 +279,18 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
       if (result.winner === 'X') {
         setScore(s => ({ ...s, player: s.player + 1 }));
         audio.playWin();
+      } else if (result.winner === 'O') {
+        setScore(s => ({ ...s, ai: s.ai + 1 }));
+        audio.playWin();
       } else if (result.winner === 'Draw') {
         audio.playLose();
       }
     } else {
-      makeAIMove(newBoard);
+      if (gameMode === 'pve') {
+        makeAIMove(newBoard);
+      } else {
+        setIsXNext(!isXNext);
+      }
     }
   };
 
@@ -305,6 +319,13 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
           <span className="hidden sm:inline">Voltar ao Dashboard</span>
         </button>
         
+        <div className="flex items-center gap-2">
+          <button onClick={toggleMode} className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer">
+            <Users className="w-5 h-5" />
+            <span className="font-medium hidden sm:block">{gameMode === 'pve' ? 'vs IA' : 'vs Player'}</span>
+          </button>
+        </div>
+
         <div className="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-white/10">
           <Settings2 className="w-4 h-4 text-gray-400 ml-2" />
           {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => (

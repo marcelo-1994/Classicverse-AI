@@ -333,6 +333,10 @@ export function ChessGame({ onBack }: ChessGameProps) {
           <h1 className="font-display text-xl font-bold tracking-wider">CHESS 3D</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={toggleMode} className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer">
+            <Users className="w-5 h-5" />
+            <span className="font-medium hidden sm:block">{gameMode === 'pve' ? 'vs IA' : 'vs Player'}</span>
+          </button>
           <button onClick={toggleSound} className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer">
             {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
