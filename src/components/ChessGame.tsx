@@ -264,7 +264,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
     if (possibleMoves.length === 0) return;
 
     let bestMove = possibleMoves[0];
-    let bestValue = 9999;
+    let bestValue = game.turn() === 'w' ? -9999 : 9999;
 
     const blunderChance = Math.random() * 100;
     if (blunderChance > aiDifficulty) {
@@ -274,9 +274,17 @@ export function ChessGame({ onBack }: ChessGameProps) {
         game.move(move);
         const boardValue = evaluateBoard(game);
         game.undo();
-        if (boardValue < bestValue) {
-          bestValue = boardValue;
-          bestMove = move;
+        
+        if (game.turn() === 'w') {
+          if (boardValue > bestValue) {
+            bestValue = boardValue;
+            bestMove = move;
+          }
+        } else {
+          if (boardValue < bestValue) {
+            bestValue = boardValue;
+            bestMove = move;
+          }
         }
       }
     }
@@ -368,8 +376,8 @@ export function ChessGame({ onBack }: ChessGameProps) {
       </div>
 
       {/* 3D Canvas */}
-      <div className="w-full flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="aspect-square w-full max-w-2xl bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
+      <div className="w-full flex-1 flex items-center justify-center p-2 relative z-10">
+        <div className="aspect-square w-full h-full max-h-[80vh] bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
           <Canvas shadows dpr={[1, 2]}>
             <Suspense fallback={null}>
               <PerspectiveCamera makeDefault position={[0, 10, 8]} fov={45} />
