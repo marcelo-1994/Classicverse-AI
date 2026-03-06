@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // Como o AjudaAí usa Supabase, podemos conectar diretamente ao banco de dados
 // usando a chave pública (anon key) e a URL do projeto Supabase do AjudaAí.
 
-const supabaseUrl = import.meta.env.VITE_AJUDA_AI_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_AJUDA_AI_SUPABASE_ANON_KEY;
+const supabaseUrl = (import.meta as any).env.VITE_AJUDA_AI_SUPABASE_URL;
+const supabaseAnonKey = (import.meta as any).env.VITE_AJUDA_AI_SUPABASE_ANON_KEY;
 
 // Inicializa o cliente real apenas se as variáveis de ambiente existirem.
 // Caso contrário, usa um mock para o preview não quebrar.

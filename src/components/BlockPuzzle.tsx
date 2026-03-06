@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, RotateCcw, Play, Pause, Trophy, BrainCircuit, ChevronLeft, ChevronRight, ChevronDown, RotateCw, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera, Environment, ContactShadows, Float, Text, RoundedBox } from '@react-three/drei';
+import * as THREE from 'three';
+import { ArrowLeft, RotateCcw, Play, Pause, Trophy, BrainCircuit, ChevronLeft, ChevronRight, ChevronDown, RotateCw, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { AIEngine } from '../services/aiEngine';
 import { audio } from '../services/audioService';
 
@@ -17,20 +20,120 @@ type TetrominoType = 'I' | 'J' | 'L' | 'O' | 'S' | 'T' | 'Z';
 interface Tetromino {
   shape: number[][];
   color: string;
-  shadow: string;
+  hex: string;
 }
 
 const TETROMINOES: Record<TetrominoType, Tetromino> = {
-  I: { shape: [[1, 1, 1, 1]], color: 'bg-cyan-400', shadow: 'shadow-[0_0_15px_rgba(34,211,238,0.6)]' },
-  J: { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-blue-500', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.6)]' },
-  L: { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-orange-500', shadow: 'shadow-[0_0_15px_rgba(249,115,22,0.6)]' },
-  O: { shape: [[1, 1], [1, 1]], color: 'bg-yellow-400', shadow: 'shadow-[0_0_15px_rgba(250,204,21,0.6)]' },
-  S: { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-emerald-400', shadow: 'shadow-[0_0_15px_rgba(52,211,153,0.6)]' },
-  T: { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-purple-500', shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.6)]' },
-  Z: { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-red-500', shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.6)]' },
+  I: { shape: [[1, 1, 1, 1]], color: 'bg-cyan-400', hex: '#22d3ee' },
+  J: { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-blue-500', hex: '#3b82f6' },
+  L: { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-orange-500', hex: '#f97316' },
+  O: { shape: [[1, 1], [1, 1]], color: 'bg-yellow-400', hex: '#facc15' },
+  S: { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-emerald-400', hex: '#34d399' },
+  T: { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-purple-500', hex: '#a855f7' },
+  Z: { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-red-500', hex: '#ef4444' },
 };
 
 const SHAPES = Object.keys(TETROMINOES) as TetrominoType[];
+
+// --- 3D COMPONENTS ---
+
+function Block({ position, color }: { position: [number, number, number], color: string }) {
+  const meshRef = useRef<THREE.Group>(null);
+  const targetPos = useRef(new THREE.Vector3(...position));
+
+  useEffect(() => {
+    targetPos.current.set(...position);
+  }, [position]);
+
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.position.lerp(targetPos.current, 0.2);
+    }
+  });
+
+  return (
+    <group ref={meshRef} position={position}>
+      <RoundedBox args={[0.95, 0.95, 0.95]} radius={0.1} smoothness={4}>
+        <meshStandardMaterial 
+          color={color} 
+          roughness={0.1} 
+          metalness={0.8} 
+          emissive={color}
+          emissiveIntensity={0.2}
+        />
+      </RoundedBox>
+    </group>
+  );
+}
+
+function GameBoard3D({ board, currentPiece }: { board: string[][], currentPiece: any }) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  return (
+    <group ref={groupRef} position={[-COLS / 2 + 0.5, ROWS / 2 - 0.5, 0]}>
+      {/* Fixed Blocks */}
+      {board.map((row, r) => 
+        row.map((cell, c) => {
+          if (cell !== '') {
+            return (
+              <Block 
+                key={`fixed-${r}-${c}`} 
+                position={[c, -r, 0]} 
+                color={TETROMINOES[cell as TetrominoType].hex} 
+              />
+            );
+          }
+          return null;
+        })
+      )}
+
+      {/* Current Piece */}
+      {currentPiece && currentPiece.shape.map((row: number[], r: number) => 
+        row.map((val: number, c: number) => {
+          if (val) {
+            return (
+              <Block 
+                key={`current-${r}-${c}`} 
+                position={[currentPiece.x + c, -(currentPiece.y + r), 0]} 
+                color={TETROMINOES[currentPiece.type as TetrominoType].hex} 
+              />
+            );
+          }
+          return null;
+        })
+      )}
+
+      {/* Grid Helper Background */}
+      <mesh position={[COLS / 2 - 0.5, -ROWS / 2 + 0.5, -0.6]}>
+        <planeGeometry args={[COLS, ROWS]} />
+        <meshStandardMaterial color="#0a0a0a" transparent opacity={0.5} />
+      </mesh>
+      
+      {/* Frame */}
+      <mesh position={[COLS / 2 - 0.5, -ROWS / 2 + 0.5, -0.65]}>
+        <boxGeometry args={[COLS + 0.2, ROWS + 0.2, 0.1]} />
+        <meshStandardMaterial color="#1a1a1a" metalness={1} roughness={0.2} />
+      </mesh>
+    </group>
+  );
+}
+
+function Scene({ board, currentPiece }: { board: string[][], currentPiece: any }) {
+  return (
+    <>
+      <PerspectiveCamera makeDefault position={[0, 0, 25]} fov={50} />
+      <OrbitControls enableZoom={true} enablePan={false} minPolarAngle={Math.PI / 4} maxPolarAngle={Math.PI / 1.5} />
+      <ambientLight intensity={0.4} />
+      <pointLight position={[10, 10, 10]} intensity={1.5} color="#06b6d4" />
+      <pointLight position={[-10, -10, 10]} intensity={1.5} color="#a855f7" />
+      <Environment preset="night" />
+      
+      <GameBoard3D board={board} currentPiece={currentPiece} />
+      
+      <ContactShadows position={[0, -ROWS / 2 - 1, 0]} opacity={0.4} scale={30} blur={2} far={10} />
+    </>
+  );
+}
 
 // --- COMPONENTE PRINCIPAL ---
 export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
@@ -47,15 +150,17 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
   const [aiDifficulty, setAiDifficulty] = useState(50);
   const [dropSpeed, setDropSpeed] = useState(1000);
 
-  // Refs para o loop do jogo (evita problemas de closure no setInterval)
+  // Refs para o loop do jogo
   const boardRef = useRef(board);
-  const currentPieceRef = useRef<{ type: TetrominoType; x: number; y: number; shape: number[][] } | null>(null);
+  const [currentPiece, setCurrentPiece] = useState<{ type: TetrominoType; x: number; y: number; shape: number[][] } | null>(null);
+  const currentPieceRef = useRef(currentPiece);
   const dropSpeedRef = useRef(dropSpeed);
   const isPausedRef = useRef(isPaused);
   const gameOverRef = useRef(gameOver);
 
   // Sincroniza refs
   useEffect(() => { boardRef.current = board; }, [board]);
+  useEffect(() => { currentPieceRef.current = currentPiece; }, [currentPiece]);
   useEffect(() => { dropSpeedRef.current = dropSpeed; }, [dropSpeed]);
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
   useEffect(() => { gameOverRef.current = gameOver; }, [gameOver]);
@@ -64,10 +169,19 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     setSoundEnabled(audio.toggleSound());
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   // --- IA ADAPTATIVA ---
   useEffect(() => {
     const initAI = async () => {
-      // Simula a busca do desempenho do jogador
       const performance = await AIEngine.analisarDesempenho('user_123', 'blockpuzzle');
       const newDiff = AIEngine.calcularNivelDificuldade(performance);
       const params = AIEngine.ajustarParametrosJogo('blockpuzzle', newDiff);
@@ -88,15 +202,13 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       y: 0
     };
 
-    // Verifica Game Over imediato
     if (checkCollision(newPiece.x, newPiece.y, newPiece.shape, boardRef.current)) {
       setGameOver(true);
       audio.playLose();
       return;
     }
 
-    currentPieceRef.current = newPiece;
-    updateBoardDisplay();
+    setCurrentPiece(newPiece);
   }, []);
 
   const checkCollision = (x: number, y: number, shape: number[][], currentBoard: string[][]) => {
@@ -127,7 +239,6 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       }
     }
 
-    // Limpar linhas
     let linesCleared = 0;
     const finalBoard = newBoard.filter(row => {
       if (row.every(cell => cell !== '')) {
@@ -147,19 +258,18 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       setScore(s => s + (linesCleared * 100 * level));
       audio.playClear();
       
-      // Aumenta o nível a cada 10 linhas
       if (Math.floor(newLines / 10) + 1 > level) {
         const nextLevel = Math.floor(newLines / 10) + 1;
         setLevel(nextLevel);
-        // IA: Aumenta a velocidade conforme o nível sobe
         setDropSpeed(prev => Math.max(100, prev * 0.85)); 
-        audio.playWin(); // Level up sound
+        audio.playWin();
       }
     } else {
-      audio.playMove(); // Just locked a piece
+      audio.playMove();
     }
 
     setBoard(finalBoard);
+    setCurrentPiece(null);
     spawnPiece();
   }, [level, lines, spawnPiece]);
 
@@ -168,8 +278,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
 
     const { x, y, shape } = currentPieceRef.current;
     if (!checkCollision(x, y + 1, shape, boardRef.current)) {
-      currentPieceRef.current.y += 1;
-      updateBoardDisplay();
+      setCurrentPiece(prev => prev ? { ...prev, y: prev.y + 1 } : null);
     } else {
       mergePiece();
     }
@@ -179,8 +288,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     if (!currentPieceRef.current || isPausedRef.current || gameOverRef.current) return;
     const { x, y, shape } = currentPieceRef.current;
     if (!checkCollision(x + dir, y, shape, boardRef.current)) {
-      currentPieceRef.current.x += dir;
-      updateBoardDisplay();
+      setCurrentPiece(prev => prev ? { ...prev, x: prev.x + dir } : null);
       audio.playClick();
     }
   }, []);
@@ -188,13 +296,11 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
   const rotate = useCallback(() => {
     if (!currentPieceRef.current || isPausedRef.current || gameOverRef.current) return;
     const { x, y, shape } = currentPieceRef.current;
-    
-    // Transposição + Reverse = Rotação 90 graus
     const rotatedShape = shape[0].map((_, index) => shape.map(row => row[index]).reverse());
     
     if (!checkCollision(x, y, rotatedShape, boardRef.current)) {
-      currentPieceRef.current.shape = rotatedShape;
-      updateBoardDisplay();
+      setCurrentPiece(prev => prev ? { ...prev, shape: rotatedShape } : null);
+      audio.playClick();
     }
   }, []);
 
@@ -204,27 +310,10 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     while (!checkCollision(x, y + 1, shape, boardRef.current)) {
       y++;
     }
-    currentPieceRef.current.y = y;
-    mergePiece();
+    setCurrentPiece(prev => prev ? { ...prev, y } : null);
+    // Use a small timeout to let the state update before merging
+    setTimeout(() => mergePiece(), 50);
   }, [mergePiece]);
-
-  // Atualiza a visualização combinando o board fixo com a peça atual
-  const [displayBoard, setDisplayBoard] = useState<string[][]>(Array(ROWS).fill(Array(COLS).fill('')));
-  
-  const updateBoardDisplay = useCallback(() => {
-    const newDisplay = boardRef.current.map(row => [...row]);
-    if (currentPieceRef.current) {
-      const { type, x, y, shape } = currentPieceRef.current;
-      for (let r = 0; r < shape.length; r++) {
-        for (let c = 0; c < shape[r].length; c++) {
-          if (shape[r][c] && y + r >= 0 && y + r < ROWS) {
-            newDisplay[y + r][x + c] = type;
-          }
-        }
-      }
-    }
-    setDisplayBoard(newDisplay);
-  }, []);
 
   // --- CONTROLES DE TECLADO ---
   useEffect(() => {
@@ -262,9 +351,8 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     setLines(0);
     setGameOver(false);
     setIsPaused(false);
-    currentPieceRef.current = null;
+    setCurrentPiece(null);
     
-    // Recalcula IA no reset
     const params = AIEngine.ajustarParametrosJogo('blockpuzzle', aiDifficulty);
     setDropSpeed(params.dropSpeed);
     spawnPiece();
@@ -279,7 +367,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       </div>
 
       {/* Topbar */}
-      <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between border-b border-white/5 bg-black/20 backdrop-blur-md">
+      <div className="relative z-20 p-4 sm:p-6 flex items-center justify-between border-b border-white/5 bg-black/20 backdrop-blur-md">
         <button 
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
@@ -291,9 +379,16 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
             <div className="w-4 h-4 bg-white rounded-sm"></div>
           </div>
-          <h1 className="font-display text-xl font-bold tracking-wider">BLOCK PUZZLE</h1>
+          <h1 className="font-display text-xl font-bold tracking-wider">BLOCK PUZZLE 3D</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleFullscreen}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title="Tela Cheia"
+          >
+            <Maximize className="w-5 h-5" />
+          </button>
           <button 
             onClick={toggleSound}
             className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
@@ -317,10 +412,10 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       </div>
 
       {/* Game Area */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-center p-4 gap-8">
+      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-center p-4 gap-8 overflow-hidden">
         
         {/* Left Stats (Desktop) */}
-        <div className="hidden lg:flex flex-col gap-4 w-48">
+        <div className="hidden lg:flex flex-col gap-4 w-48 z-20">
           <div className="glass-panel p-4 rounded-2xl border border-white/10 text-center">
             <p className="text-gray-400 text-sm mb-1">Pontuação</p>
             <p className="font-mono text-3xl font-bold text-cyan-400">{score}</p>
@@ -329,10 +424,6 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
             <p className="text-gray-400 text-sm mb-1">Nível</p>
             <p className="font-mono text-3xl font-bold text-purple-400">{level}</p>
           </div>
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 text-center">
-            <p className="text-gray-400 text-sm mb-1">Linhas</p>
-            <p className="font-mono text-2xl font-bold text-white">{lines}</p>
-          </div>
           
           {/* AI Status */}
           <div className="mt-4 glass-panel p-4 rounded-2xl border border-purple-500/30 bg-purple-500/5">
@@ -340,99 +431,84 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
               <BrainCircuit className="w-4 h-4 text-purple-400" />
               <p className="text-xs font-bold text-purple-400 uppercase tracking-wider">IA Adaptativa</p>
             </div>
-            <p className="text-xs text-gray-400">Dificuldade ajustada para o seu nível de habilidade.</p>
             <div className="mt-2 h-1.5 w-full bg-black rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-cyan-400 to-purple-500" style={{ width: `${aiDifficulty}%` }}></div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Stats (Top) */}
-        <div className="flex lg:hidden w-full max-w-sm justify-between gap-2">
-          <div className="flex-1 glass-panel p-2 rounded-xl border border-white/10 text-center">
-            <p className="text-[10px] text-gray-400 uppercase">Score</p>
-            <p className="font-mono text-lg font-bold text-cyan-400">{score}</p>
-          </div>
-          <div className="flex-1 glass-panel p-2 rounded-xl border border-white/10 text-center">
-            <p className="text-[10px] text-gray-400 uppercase">Nível</p>
-            <p className="font-mono text-lg font-bold text-purple-400">{level}</p>
-          </div>
-        </div>
-
-        {/* Board */}
-        <div className="relative p-2 glass-panel rounded-xl border border-white/20 shadow-[0_0_50px_rgba(6,182,212,0.15)] bg-black/40">
-          <div 
-            className="grid gap-[1px] bg-white/10 border border-white/10"
-            style={{ 
-              gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`,
-              width: 'min(80vw, 300px)',
-              height: 'min(160vw, 600px)'
-            }}
-          >
-            {displayBoard.map((row, r) => 
-              row.map((cell, c) => {
-                const isFilled = cell !== '';
-                const blockStyle = isFilled ? TETROMINOES[cell as TetrominoType] : null;
-                
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    className={`w-full h-full rounded-sm transition-all duration-75 ${
-                      isFilled 
-                        ? `${blockStyle?.color} ${blockStyle?.shadow} border border-white/20` 
-                        : 'bg-black/40'
-                    }`}
-                  />
-                );
-              })
-            )}
-          </div>
+        {/* 3D View */}
+        <div className="flex-1 w-full h-full min-h-[400px] relative">
+          <Canvas shadows dpr={[1, 2]}>
+            <Suspense fallback={null}>
+              <Scene board={board} currentPiece={currentPiece} />
+            </Suspense>
+          </Canvas>
 
           {/* Overlays */}
-          {isPaused && !gameOver && (
-            <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-xl">
-              <div className="text-center">
-                <Pause className="w-12 h-12 text-white mx-auto mb-2" />
-                <h2 className="font-display text-2xl font-bold text-white">PAUSADO</h2>
-              </div>
-            </div>
-          )}
-
-          {gameOver && (
-            <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex items-center justify-center rounded-xl">
+          <AnimatePresence>
+            {isPaused && !gameOver && (
               <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-center p-6 glass-panel border border-red-500/30 rounded-2xl"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-xl"
               >
-                <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-                <h2 className="font-display text-3xl font-bold text-white mb-2">GAME OVER</h2>
-                <p className="text-gray-300 mb-6">Pontuação Final: <span className="text-cyan-400 font-mono font-bold">{score}</span></p>
-                <button 
-                  onClick={resetGame}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold hover:from-cyan-400 hover:to-blue-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] cursor-pointer"
-                >
-                  Jogar Novamente
-                </button>
+                <div className="text-center">
+                  <Pause className="w-16 h-16 text-white mx-auto mb-4" />
+                  <h2 className="font-display text-4xl font-bold text-white tracking-widest">PAUSADO</h2>
+                </div>
               </motion.div>
-            </div>
-          )}
+            )}
+
+            {gameOver && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex items-center justify-center rounded-xl"
+              >
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-center p-10 glass-panel border border-red-500/30 rounded-3xl max-w-sm w-full"
+                >
+                  <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-6" />
+                  <h2 className="font-display text-4xl font-bold text-white mb-4">FIM DE JOGO</h2>
+                  <p className="text-gray-300 text-lg mb-8">Sua pontuação final:<br/><span className="text-cyan-400 font-mono text-4xl font-bold">{score}</span></p>
+                  <button 
+                    onClick={resetGame}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:from-cyan-400 hover:to-blue-400 transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+                  >
+                    Jogar Novamente
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Mobile Controls (Bottom) */}
-        <div className="lg:hidden w-full max-w-sm grid grid-cols-4 gap-2 mt-4">
-          <button onClick={() => moveHorizontal(-1)} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20">
-            <ChevronLeft className="w-8 h-8" />
-          </button>
-          <button onClick={rotate} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20">
-            <RotateCw className="w-8 h-8" />
-          </button>
-          <button onClick={() => moveHorizontal(1)} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20">
-            <ChevronRight className="w-8 h-8" />
-          </button>
-          <button onClick={hardDrop} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20 bg-cyan-500/20 border-cyan-500/30">
-            <ChevronDown className="w-8 h-8 text-cyan-400" />
-          </button>
+        {/* Controls */}
+        <div className="w-full lg:w-48 flex flex-col gap-4 z-20">
+          <div className="grid grid-cols-4 lg:grid-cols-2 gap-2">
+            <button onClick={() => moveHorizontal(-1)} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20 transition-colors">
+              <ChevronLeft className="w-8 h-8" />
+            </button>
+            <button onClick={rotate} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20 transition-colors">
+              <RotateCw className="w-8 h-8" />
+            </button>
+            <button onClick={() => moveHorizontal(1)} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20 transition-colors">
+              <ChevronRight className="w-8 h-8" />
+            </button>
+            <button onClick={hardDrop} className="glass-panel p-4 rounded-xl flex items-center justify-center active:bg-white/20 bg-cyan-500/20 border-cyan-500/30 transition-colors">
+              <ChevronDown className="w-8 h-8 text-cyan-400" />
+            </button>
+          </div>
+          
+          <div className="hidden lg:block glass-panel p-4 rounded-2xl border border-white/10 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Linhas</p>
+            <p className="font-mono text-2xl font-bold text-white">{lines}</p>
+          </div>
         </div>
 
       </div>

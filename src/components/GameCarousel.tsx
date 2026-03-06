@@ -24,8 +24,18 @@ const games = [
     featured: true
   },
   {
+    id: 'spaceshooter',
+    title: 'Space Shooter 3D',
+    category: 'arcade',
+    image: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Adaptativa',
+    aiLevel: 85,
+    players: '4.1k online',
+    color: 'from-cyan-500 to-blue-500'
+  },
+  {
     id: 'arcademaze',
-    title: 'Arcade Maze AI',
+    title: 'Arcade Maze 3D',
     category: 'arcade',
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
     difficulty: 'Adaptativa',
@@ -35,17 +45,37 @@ const games = [
   },
   {
     id: 'blockpuzzle',
-    title: 'Block Puzzle',
+    title: 'Block Puzzle 3D',
     category: 'puzzle',
     image: 'https://images.unsplash.com/photo-1614624532983-4ce03382d63d?auto=format&fit=crop&q=80&w=800',
     difficulty: 'Crescente',
     aiLevel: 60,
     players: '8.4k online',
-    color: 'from-cyan-500 to-blue-500'
+    color: 'from-blue-500 to-indigo-500'
+  },
+  {
+    id: 'minesweeper',
+    title: 'Campo Minado 3D',
+    category: 'puzzle',
+    image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Médio',
+    aiLevel: 75,
+    players: '3.2k online',
+    color: 'from-emerald-500 to-teal-500'
+  },
+  {
+    id: 'tictactoe',
+    title: 'Tic Tac Toe 3D',
+    category: 'arcade',
+    image: 'https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Fácil',
+    aiLevel: 90,
+    players: '5.6k online',
+    color: 'from-purple-500 to-pink-500'
   },
   {
     id: 'chess',
-    title: 'Xadrez Inteligente',
+    title: 'Chess 3D',
     category: 'puzzle',
     image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
     difficulty: 'Adaptativa',
@@ -54,18 +84,8 @@ const games = [
     color: 'from-emerald-500 to-teal-500'
   },
   {
-    id: 'spaceshooter',
-    title: 'Space Shooter Retrô',
-    category: 'arcade',
-    image: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?auto=format&fit=crop&q=80&w=800',
-    difficulty: 'Adaptativa',
-    aiLevel: 85,
-    players: '4.1k online',
-    color: 'from-pink-500 to-rose-500'
-  },
-  {
     id: 'truco',
-    title: 'Truco Online',
+    title: 'Truco 3D',
     category: 'multiplayer',
     image: 'https://images.unsplash.com/photo-1605870445919-838d190e8e1b?auto=format&fit=crop&q=80&w=800',
     difficulty: 'Multiplayer',

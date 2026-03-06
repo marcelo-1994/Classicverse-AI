@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Trophy, Star, Volume2, CheckCircle2, XCircle, Sparkles, BookOpen } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { Float, Stars, Text, Environment } from '@react-three/drei';
+import { ChevronLeft, Trophy, Star, Volume2, CheckCircle2, XCircle, Sparkles, BookOpen, Flame, Maximize } from 'lucide-react';
 
 interface Question {
   id: number;
@@ -21,6 +23,24 @@ const QUESTIONS: Question[] = [
   { id: 8, word: 'Time', translation: 'Tempo', options: ['Espaço', 'Hora', 'Tempo', 'Dia'], type: 'translate' },
 ];
 
+function FloatingLetters() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  return (
+    <group>
+      {Array.from({ length: 20 }).map((_, i) => (
+        <Float key={i} speed={1 + Math.random()} rotationIntensity={2} floatIntensity={2} position={[(Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 10]}>
+          <Text
+            fontSize={0.5 + Math.random()}
+            color={i % 2 === 0 ? "#f59e0b" : "#f97316"}
+          >
+            {letters[Math.floor(Math.random() * letters.length)]}
+          </Text>
+        </Float>
+      ))}
+    </group>
+  );
+}
+
 interface EnglishGameProps {
   onBack: () => void;
 }
@@ -37,11 +57,21 @@ export function EnglishGame({ onBack }: EnglishGameProps) {
 
   const currentQuestion = QUESTIONS[currentQuestionIndex];
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   useEffect(() => {
     if (currentQuestion) {
       setShuffledOptions([...currentQuestion.options].sort(() => Math.random() - 0.5));
     }
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, currentQuestion]);
 
   const handleAnswer = (answer: string) => {
     if (selectedAnswer !== null) return;
@@ -70,16 +100,27 @@ export function EnglishGame({ onBack }: EnglishGameProps) {
   };
 
   const playPronunciation = () => {
-    // In a real app, use SpeechSynthesis API
     const utterance = new SpeechSynthesisUtterance(currentQuestion.word);
     utterance.lang = 'en-US';
     window.speechSynthesis.speak(utterance);
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col">
+    <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col relative overflow-hidden">
+      {/* 3D Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Canvas camera={{ position: [0, 0, 10] }}>
+          <Suspense fallback={null}>
+            <ambientLight intensity={0.5} />
+            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+            <FloatingLetters />
+            <Environment preset="night" />
+          </Suspense>
+        </Canvas>
+      </div>
+
       {/* Header */}
-      <header className="p-4 sm:p-6 flex items-center justify-between glass-panel border-b border-white/10 z-10">
+      <header className="p-4 sm:p-6 flex items-center justify-between glass-panel border-b border-white/10 z-10 relative">
         <button 
           onClick={onBack}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
@@ -89,6 +130,13 @@ export function EnglishGame({ onBack }: EnglishGameProps) {
         </button>
         
         <div className="flex items-center gap-6">
+          <button 
+            onClick={toggleFullscreen}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title="Tela Cheia"
+          >
+            <Maximize className="w-5 h-5" />
+          </button>
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-400" />
             <span className="font-bold text-amber-400">{xp} XP</span>
@@ -101,12 +149,7 @@ export function EnglishGame({ onBack }: EnglishGameProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden">
-        
-        {/* Background Elements */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
         <AnimatePresence mode="wait">
           {!isGameOver ? (
             <motion.div 
