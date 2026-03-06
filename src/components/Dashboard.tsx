@@ -12,12 +12,14 @@ import { Minesweeper } from './Minesweeper';
 import { BlockPuzzle } from './BlockPuzzle';
 import { ArcadeMaze } from './ArcadeMaze';
 import { ChessGame } from './ChessGame';
+import { Truco } from './Truco';
+import { EnglishGame } from './EnglishGame';
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
-type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle' | 'arcademaze' | 'chess';
+type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle' | 'arcademaze' | 'chess' | 'truco' | 'english';
 
 export function Dashboard({ onLogout }: DashboardProps) {
   const [activeView, setActiveView] = useState<ViewState>('home');
@@ -40,6 +42,14 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
   if (activeView === 'chess') {
     return <ChessGame onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'truco') {
+    return <Truco onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'english') {
+    return <EnglishGame onBack={() => setActiveView('home')} />;
   }
 
   if (activeView === 'store') {

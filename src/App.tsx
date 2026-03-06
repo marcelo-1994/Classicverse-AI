@@ -20,8 +20,10 @@ export default function App() {
     <div className="min-h-screen font-sans selection:bg-purple-500/30">
       <Navbar onOpenAuth={() => setIsAuthModalOpen(true)} />
       <main>
-        <Hero />
-        <GameCategories />
+        <Hero onPlay={() => setIsAuthModalOpen(true)} />
+        <div id="games-section">
+          <GameCategories />
+        </div>
         <Features />
         <Pricing />
       </main>

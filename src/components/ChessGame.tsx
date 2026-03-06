@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Chess, Move } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { ArrowLeft, RotateCcw, Users, BrainCircuit, Trophy } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Users, BrainCircuit, Trophy, Maximize, Minimize } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AIEngine } from '../services/aiEngine';
 
@@ -18,6 +18,28 @@ export function ChessGame({ onBack }: ChessGameProps) {
   const [searchDepth, setSearchDepth] = useState(2);
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
+  const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // --- IA ADAPTATIVA ---
   useEffect(() => {
@@ -106,9 +128,8 @@ export function ChessGame({ onBack }: ChessGameProps) {
         promotion: piece[1].toLowerCase() ?? 'q',
       });
 
-      if (move === null) return false;
-
       setGame(gameCopy);
+      setMoveFrom(null);
       
       if (!checkGameOver(gameCopy) && gameMode === 'pve') {
         // Delay para a IA "pensar"
@@ -120,10 +141,47 @@ export function ChessGame({ onBack }: ChessGameProps) {
     }
   };
 
+  const onSquareClick = (square: string) => {
+    if (gameOver) return;
+
+    if (!moveFrom) {
+      const piece = game.get(square);
+      if (piece && piece.color === game.turn()) {
+        setMoveFrom(square);
+      }
+      return;
+    }
+
+    try {
+      const gameCopy = new Chess(game.fen());
+      const move = gameCopy.move({
+        from: moveFrom,
+        to: square,
+        promotion: 'q',
+      });
+
+      setGame(gameCopy);
+      setMoveFrom(null);
+      
+      if (!checkGameOver(gameCopy) && gameMode === 'pve') {
+        setTimeout(makeAIMove, 500);
+      }
+    } catch (e) {
+      // Invalid move, maybe clicked another piece
+      const piece = game.get(square);
+      if (piece && piece.color === game.turn()) {
+        setMoveFrom(square);
+      } else {
+        setMoveFrom(null);
+      }
+    }
+  };
+
   const resetGame = () => {
     setGame(new Chess());
     setGameOver(false);
     setWinner(null);
+    setMoveFrom(null);
   };
 
   const toggleMode = () => {
@@ -132,7 +190,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen bg-[#050505] text-white flex flex-col font-sans relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]"></div>
@@ -154,8 +212,16 @@ export function ChessGame({ onBack }: ChessGameProps) {
         </div>
         <div className="flex items-center gap-2">
           <button 
+            onClick={toggleFullscreen}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title="Tela Cheia"
+          >
+            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+          </button>
+          <button 
             onClick={resetGame}
             className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title="Reiniciar Partida"
           >
             <RotateCcw className="w-5 h-5" />
           </button>
@@ -217,12 +283,16 @@ export function ChessGame({ onBack }: ChessGameProps) {
         </div>
 
         {/* Board Container */}
-        <div className="relative p-4 glass-panel rounded-3xl border border-white/20 shadow-[0_0_50px_rgba(16,185,129,0.1)] bg-black/80 w-full max-w-[500px]">
+        <div className="relative p-4 glass-panel rounded-3xl border border-white/20 shadow-[0_0_50px_rgba(16,185,129,0.1)] bg-black/80 w-full max-w-[500px] touch-none">
           <Chessboard 
             position={game.fen()} 
             onPieceDrop={onDrop}
+            onSquareClick={onSquareClick}
             customDarkSquareStyle={{ backgroundColor: '#111827' }}
             customLightSquareStyle={{ backgroundColor: '#374151' }}
+            customSquareStyles={{
+              ...(moveFrom ? { [moveFrom]: { backgroundColor: 'rgba(16, 185, 129, 0.4)' } } : {})
+            }}
             customBoardStyle={{
               borderRadius: '8px',
               boxShadow: '0 0 20px rgba(0,0,0,0.5)'

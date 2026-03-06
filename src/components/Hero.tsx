@@ -14,7 +14,18 @@ function FloatingCube() {
   );
 }
 
-export function Hero() {
+interface HeroProps {
+  onPlay: () => void;
+}
+
+export function Hero({ onPlay }: HeroProps) {
+  const scrollToGames = () => {
+    const gamesSection = document.getElementById('games-section');
+    if (gamesSection) {
+      gamesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* 3D Background */}
@@ -52,11 +63,17 @@ export function Hero() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="w-full sm:w-auto px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2 group cursor-pointer">
+            <button 
+              onClick={onPlay}
+              className="w-full sm:w-auto px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-bold text-lg transition-all shadow-[0_0_30px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2 group cursor-pointer"
+            >
               Começar a Jogar
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="w-full sm:w-auto px-8 py-4 glass-panel hover:bg-white/10 text-white rounded-full font-bold text-lg transition-all cursor-pointer">
+            <button 
+              onClick={scrollToGames}
+              className="w-full sm:w-auto px-8 py-4 glass-panel hover:bg-white/10 text-white rounded-full font-bold text-lg transition-all cursor-pointer"
+            >
               Ver Catálogo
             </button>
           </div>
