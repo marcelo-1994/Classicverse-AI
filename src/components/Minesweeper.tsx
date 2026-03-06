@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Bomb, Flag, Clock, RotateCcw, Trophy } from 'lucide-react';
+import { ArrowLeft, Bomb, Flag, Clock, RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react';
+import { audio } from '../services/audioService';
 
 interface MinesweeperProps {
   onBack: () => void;
@@ -24,6 +25,11 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
   const [minesLeft, setMinesLeft] = useState(TOTAL_MINES);
   const [time, setTime] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
+
+  const toggleSound = () => {
+    setSoundEnabled(audio.toggleSound());
+  };
 
   // Initialize Grid
   const initializeGrid = useCallback(() => {
@@ -102,6 +108,7 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
       newGrid[r][c].isRevealed = true;
       setGrid(newGrid);
       setGameState('lost');
+      audio.playLose();
       return;
     }
 
@@ -126,6 +133,7 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
     }
 
     setGrid(newGrid);
+    audio.playClick();
     checkWinCondition(newGrid);
   };
 
@@ -139,9 +147,11 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
     if (!cell.isFlagged && minesLeft > 0) {
       cell.isFlagged = true;
       setMinesLeft(prev => prev - 1);
+      audio.playClick();
     } else if (cell.isFlagged) {
       cell.isFlagged = false;
       setMinesLeft(prev => prev + 1);
+      audio.playClick();
     }
     
     setGrid(newGrid);
@@ -158,6 +168,7 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
     }
     if (unrevealedSafeCells === 0) {
       setGameState('won');
+      audio.playWin();
     }
   };
 
@@ -197,7 +208,15 @@ export function Minesweeper({ onBack }: MinesweeperProps) {
           <Bomb className="w-6 h-6 text-cyan-400" />
           <h1 className="font-display text-xl font-bold tracking-wider">CYBER BREACH</h1>
         </div>
-        <div className="w-[140px]"></div> {/* Spacer for balance */}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleSound}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title={soundEnabled ? "Desativar Som" : "Ativar Som"}
+          >
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Game Area */}

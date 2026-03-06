@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Gamepad2, Bell, Search, LogOut, Sparkles, ShoppingBag, Download } from 'lucide-react';
+import { Gamepad2, Bell, Search, LogOut, Sparkles, ShoppingBag, Download, Share2 } from 'lucide-react';
 
 interface DashboardTopbarProps {
   onLogout: () => void;
@@ -26,6 +26,24 @@ export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps)
       if (outcome === 'accepted') {
         setDeferredPrompt(null);
       }
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'ClassicVerse AI',
+          text: 'Venha jogar os melhores jogos clássicos com IA adaptativa!',
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Erro ao compartilhar:', error);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copiado para a área de transferência!');
     }
   };
 
@@ -57,6 +75,16 @@ export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps)
           
           {/* Right Actions */}
           <div className="flex items-center gap-4">
+            {/* Share Button */}
+            <button 
+              onClick={handleShare}
+              className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:border-purple-500/60 transition-all group cursor-pointer"
+              title="Compartilhar App"
+            >
+              <Share2 className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-bold text-purple-100 group-hover:text-white">Compartilhar</span>
+            </button>
+
             {/* Install App Button (PWA) */}
             {deferredPrompt && (
               <button 
@@ -69,27 +97,31 @@ export function DashboardTopbar({ onLogout, onOpenStore }: DashboardTopbarProps)
             )}
 
             {/* AjudaAí Integration Button */}
-            <button className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 hover:border-orange-500/60 transition-all group cursor-pointer">
+            <button className="hidden lg:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-pink-500/20 border border-orange-500/30 hover:border-orange-500/60 transition-all group cursor-pointer">
               <Sparkles className="w-4 h-4 text-orange-400 group-hover:animate-pulse" />
               <span className="text-sm font-bold text-orange-100 group-hover:text-white">AjudaAí Plus</span>
+            </button>
+
+            <button onClick={handleShare} className="sm:hidden p-2 text-gray-400 hover:text-purple-400 transition-colors cursor-pointer">
+              <Share2 className="w-5 h-5" />
             </button>
 
             <button onClick={onOpenStore} className="md:hidden p-2 text-gray-400 hover:text-purple-400 transition-colors cursor-pointer">
               <ShoppingBag className="w-5 h-5" />
             </button>
 
-            <button className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer">
+            <button className="p-2 text-gray-400 hover:text-white transition-colors cursor-pointer hidden sm:block">
               <Search className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-400 hover:text-white transition-colors relative cursor-pointer">
+            <button className="p-2 text-gray-400 hover:text-white transition-colors relative cursor-pointer hidden sm:block">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
             </button>
             
-            <div className="h-8 w-px bg-white/10 mx-2"></div>
+            <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block"></div>
             
             <div className="flex items-center gap-3 cursor-pointer group">
-              <div className="text-right hidden sm:block">
+              <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">PlayerOne</p>
                 <p className="text-xs text-gray-400">Nível 42</p>
               </div>

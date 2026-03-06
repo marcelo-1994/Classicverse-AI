@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Chess, Move } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { ArrowLeft, RotateCcw, Users, BrainCircuit, Trophy, Maximize, Minimize } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Users, BrainCircuit, Trophy, Maximize, Minimize, Volume2, VolumeX } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AIEngine } from '../services/aiEngine';
+import { audio } from '../services/audioService';
 
 interface ChessGameProps {
   onBack: () => void;
@@ -19,9 +20,14 @@ export function ChessGame({ onBack }: ChessGameProps) {
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleSound = () => {
+    setSoundEnabled(audio.toggleSound());
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -59,14 +65,22 @@ export function ChessGame({ onBack }: ChessGameProps) {
     if (cg.isGameOver()) {
       setGameOver(true);
       if (cg.isCheckmate()) {
-        setWinner(cg.turn() === 'w' ? 'Pretas' : 'Brancas');
+        const win = cg.turn() === 'w' ? 'Pretas' : 'Brancas';
+        setWinner(win);
+        if (gameMode === 'pve') {
+          if (win === 'Brancas') audio.playWin();
+          else audio.playLose();
+        } else {
+          audio.playWin();
+        }
       } else if (cg.isDraw() || cg.isStalemate() || cg.isThreefoldRepetition()) {
         setWinner('Empate');
+        audio.playLose();
       }
       return true;
     }
     return false;
-  }, []);
+  }, [gameMode]);
 
   // Função de avaliação simples para a IA
   const evaluateBoard = (cg: Chess) => {
@@ -114,6 +128,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
     const gameCopy = new Chess(game.fen());
     gameCopy.move(bestMove);
     setGame(gameCopy);
+    audio.playMove();
     checkGameOver(gameCopy);
   }, [game, aiDifficulty, checkGameOver]);
 
@@ -130,6 +145,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
 
       setGame(gameCopy);
       setMoveFrom(null);
+      audio.playMove();
       
       if (!checkGameOver(gameCopy) && gameMode === 'pve') {
         // Delay para a IA "pensar"
@@ -148,6 +164,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
       const piece = game.get(square);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
+        audio.playClick();
       }
       return;
     }
@@ -162,6 +179,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
 
       setGame(gameCopy);
       setMoveFrom(null);
+      audio.playMove();
       
       if (!checkGameOver(gameCopy) && gameMode === 'pve') {
         setTimeout(makeAIMove, 500);
@@ -171,6 +189,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
       const piece = game.get(square);
       if (piece && piece.color === game.turn()) {
         setMoveFrom(square);
+        audio.playClick();
       } else {
         setMoveFrom(null);
       }
@@ -211,6 +230,13 @@ export function ChessGame({ onBack }: ChessGameProps) {
           <h1 className="font-display text-xl font-bold tracking-wider">XADREZ INTELIGENTE</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleSound}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title={soundEnabled ? "Desativar Som" : "Ativar Som"}
+          >
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
           <button 
             onClick={toggleFullscreen}
             className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"

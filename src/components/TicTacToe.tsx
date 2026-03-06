@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Trophy, RotateCcw, BrainCircuit, Settings2 } from 'lucide-react';
+import { ArrowLeft, Trophy, RotateCcw, BrainCircuit, Settings2, Volume2, VolumeX } from 'lucide-react';
+import { audio } from '../services/audioService';
 
 interface TicTacToeProps {
   onBack: () => void;
@@ -17,6 +18,11 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
   const [aiThinking, setAiThinking] = useState(false);
   const [score, setScore] = useState({ player: 0, ai: 0 });
   const [difficulty, setDifficulty] = useState<Difficulty>('hard');
+  const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
+
+  const toggleSound = () => {
+    setSoundEnabled(audio.toggleSound());
+  };
 
   // Winning combinations
   const lines = [
@@ -125,11 +131,17 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
         newBoard[moveIndex] = 'O';
         setBoard(newBoard);
         setIsXNext(true);
+        audio.playMove();
         
         const result = checkWinner(newBoard);
         if (result) {
           setWinner(result);
-          if (result === 'O') setScore(s => ({ ...s, ai: s.ai + 1 }));
+          if (result === 'O') {
+            setScore(s => ({ ...s, ai: s.ai + 1 }));
+            audio.playLose();
+          } else if (result === 'Draw') {
+            audio.playLose();
+          }
         }
       }
       setAiThinking(false);
@@ -143,11 +155,17 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
     newBoard[index] = 'X';
     setBoard(newBoard);
     setIsXNext(false);
+    audio.playMove();
 
     const result = checkWinner(newBoard);
     if (result) {
       setWinner(result);
-      if (result === 'X') setScore(s => ({ ...s, player: s.player + 1 }));
+      if (result === 'X') {
+        setScore(s => ({ ...s, player: s.player + 1 }));
+        audio.playWin();
+      } else if (result === 'Draw') {
+        audio.playLose();
+      }
     } else {
       makeAIMove(newBoard);
     }
@@ -195,6 +213,13 @@ export function TicTacToe({ onBack }: TicTacToeProps) {
         </div>
 
         <div className="flex items-center gap-6">
+          <button 
+            onClick={toggleSound}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title={soundEnabled ? "Desativar Som" : "Ativar Som"}
+          >
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
           <div className="flex items-center gap-2">
             <span className="text-cyan-400 font-bold hidden sm:inline">Você (X)</span>
             <span className="font-display text-2xl font-bold">{score.player}</span>

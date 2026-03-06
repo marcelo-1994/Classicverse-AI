@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, RotateCcw, Play, Pause, Trophy, BrainCircuit, ChevronLeft, ChevronRight, ChevronDown, RotateCw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause, Trophy, BrainCircuit, ChevronLeft, ChevronRight, ChevronDown, RotateCw, Volume2, VolumeX } from 'lucide-react';
 import { AIEngine } from '../services/aiEngine';
+import { audio } from '../services/audioService';
 
 interface BlockPuzzleProps {
   onBack: () => void;
@@ -40,6 +41,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
   const [lines, setLines] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(audio.isSoundEnabled());
   
   // Estados da IA
   const [aiDifficulty, setAiDifficulty] = useState(50);
@@ -57,6 +59,10 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
   useEffect(() => { dropSpeedRef.current = dropSpeed; }, [dropSpeed]);
   useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
   useEffect(() => { gameOverRef.current = gameOver; }, [gameOver]);
+
+  const toggleSound = () => {
+    setSoundEnabled(audio.toggleSound());
+  };
 
   // --- IA ADAPTATIVA ---
   useEffect(() => {
@@ -85,6 +91,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     // Verifica Game Over imediato
     if (checkCollision(newPiece.x, newPiece.y, newPiece.shape, boardRef.current)) {
       setGameOver(true);
+      audio.playLose();
       return;
     }
 
@@ -138,6 +145,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
       const newLines = lines + linesCleared;
       setLines(newLines);
       setScore(s => s + (linesCleared * 100 * level));
+      audio.playClear();
       
       // Aumenta o nível a cada 10 linhas
       if (Math.floor(newLines / 10) + 1 > level) {
@@ -145,7 +153,10 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
         setLevel(nextLevel);
         // IA: Aumenta a velocidade conforme o nível sobe
         setDropSpeed(prev => Math.max(100, prev * 0.85)); 
+        audio.playWin(); // Level up sound
       }
+    } else {
+      audio.playMove(); // Just locked a piece
     }
 
     setBoard(finalBoard);
@@ -170,6 +181,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
     if (!checkCollision(x + dir, y, shape, boardRef.current)) {
       currentPieceRef.current.x += dir;
       updateBoardDisplay();
+      audio.playClick();
     }
   }, []);
 
@@ -282,6 +294,13 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
           <h1 className="font-display text-xl font-bold tracking-wider">BLOCK PUZZLE</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleSound}
+            className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
+            title={soundEnabled ? "Desativar Som" : "Ativar Som"}
+          >
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </button>
           <button 
             onClick={() => setIsPaused(!isPaused)}
             className="p-2 rounded-full glass-panel hover:bg-white/10 transition-colors cursor-pointer"
