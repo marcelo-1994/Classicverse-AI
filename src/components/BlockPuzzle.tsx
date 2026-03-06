@@ -438,7 +438,7 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
         </div>
 
         {/* 3D View */}
-        <div className="flex-1 w-full h-full min-h-[400px] relative">
+        <div className="flex-1 w-full min-h-[400px] relative">
           <Canvas shadows dpr={[1, 2]}>
             <Suspense fallback={null}>
               <Scene board={board} currentPiece={currentPiece} />

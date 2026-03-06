@@ -346,7 +346,7 @@ export function ChessGame({ onBack }: ChessGameProps) {
       </div>
 
       {/* 3D Canvas */}
-      <div className="w-full h-full relative z-10">
+      <div className="w-full flex-1 relative z-10">
         <Canvas shadows dpr={[1, 2]}>
           <Suspense fallback={null}>
             <Scene game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />

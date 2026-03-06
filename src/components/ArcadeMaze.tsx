@@ -455,7 +455,7 @@ export function ArcadeMaze({ onBack }: ArcadeMazeProps) {
         </div>
 
         {/* 3D View */}
-        <div className="w-full h-full relative">
+        <div className="w-full flex-1 relative">
           <Canvas shadows dpr={[1, 2]}>
             <Suspense fallback={null}>
               <MazeScene 
