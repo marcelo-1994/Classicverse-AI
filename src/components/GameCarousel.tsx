@@ -92,6 +92,16 @@ const games = [
     aiLevel: 0,
     players: '25k online',
     color: 'from-orange-500 to-red-500'
+  },
+  {
+    id: 'blackjack',
+    title: 'Blackjack 3D',
+    category: 'arcade',
+    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800',
+    difficulty: 'Médio',
+    aiLevel: 80,
+    players: '18k online',
+    color: 'from-yellow-500 to-amber-600'
   }
 ];
 

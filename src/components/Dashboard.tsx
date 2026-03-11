@@ -15,12 +15,13 @@ import { ChessGame } from './ChessGame';
 import { Truco } from './Truco';
 import { EnglishGame } from './EnglishGame';
 import { SpaceShooter } from './SpaceShooter';
+import { Blackjack } from './Blackjack';
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
-type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle' | 'arcademaze' | 'chess' | 'truco' | 'english' | 'spaceshooter';
+type ViewState = 'home' | 'store' | 'tictactoe' | 'minesweeper' | 'blockpuzzle' | 'arcademaze' | 'chess' | 'truco' | 'english' | 'spaceshooter' | 'blackjack';
 
 export function Dashboard({ onLogout }: DashboardProps) {
   const [activeView, setActiveView] = useState<ViewState>('home');
@@ -55,6 +56,10 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
   if (activeView === 'spaceshooter') {
     return <SpaceShooter onBack={() => setActiveView('home')} />;
+  }
+
+  if (activeView === 'blackjack') {
+    return <Blackjack onBack={() => setActiveView('home')} />;
   }
 
   if (activeView === 'store') {
