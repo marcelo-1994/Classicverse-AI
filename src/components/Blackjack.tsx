@@ -319,42 +319,40 @@ export function Blackjack({ onBack }: BlackjackProps) {
       </div>
 
       {/* 3D Canvas */}
-      <div className="w-full flex-1 flex items-center justify-center p-2 relative z-10">
-        <div className="w-full h-full max-h-[80vh] bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
-          <Canvas shadows dpr={[1, 2]}>
-            <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 8, 10]} fov={45} />
-              <OrbitControls enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.5} minDistance={8} maxDistance={15} />
-              <ambientLight intensity={0.4} />
-              <pointLight position={[10, 10, 10]} intensity={1} castShadow />
-              <Environment preset="night" />
-              
-              <Table3D />
-              
-              {/* Dealer Hand */}
-              {dealerHand.map((c, i) => (
-                <Card3D 
-                  key={c.id} 
-                  card={c} 
-                  position={[(i - (dealerHand.length - 1) / 2) * 1.6, 0.1, -2]} 
-                  rotation={[-Math.PI / 2, 0, 0]} 
-                />
-              ))}
+      <div className="absolute inset-0 z-10">
+        <Canvas shadows dpr={[1, 2]}>
+          <Suspense fallback={null}>
+            <PerspectiveCamera makeDefault position={[0, 8, 10]} fov={45} />
+            <OrbitControls enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.5} minDistance={8} maxDistance={15} />
+            <ambientLight intensity={0.4} />
+            <pointLight position={[10, 10, 10]} intensity={1} castShadow />
+            <Environment preset="night" />
+            
+            <Table3D />
+            
+            {/* Dealer Hand */}
+            {dealerHand.map((c, i) => (
+              <Card3D 
+                key={c.id} 
+                card={c} 
+                position={[(i - (dealerHand.length - 1) / 2) * 1.6, 0.1, -2]} 
+                rotation={[-Math.PI / 2, 0, 0]} 
+              />
+            ))}
 
-              {/* Player Hand */}
-              {playerHand.map((c, i) => (
-                <Card3D 
-                  key={c.id} 
-                  card={c} 
-                  position={[(i - (playerHand.length - 1) / 2) * 1.6, 0.1, 2]} 
-                  rotation={[-Math.PI / 2, 0, 0]} 
-                />
-              ))}
+            {/* Player Hand */}
+            {playerHand.map((c, i) => (
+              <Card3D 
+                key={c.id} 
+                card={c} 
+                position={[(i - (playerHand.length - 1) / 2) * 1.6, 0.1, 2]} 
+                rotation={[-Math.PI / 2, 0, 0]} 
+              />
+            ))}
 
-              <ContactShadows position={[0, -1.1, 0]} opacity={0.4} scale={20} blur={2} far={10} />
-            </Suspense>
-          </Canvas>
-        </div>
+            <ContactShadows position={[0, -1.1, 0]} opacity={0.4} scale={20} blur={2} far={10} />
+          </Suspense>
+        </Canvas>
       </div>
 
       {/* Message Box */}

@@ -438,56 +438,54 @@ export function BlockPuzzle({ onBack }: BlockPuzzleProps) {
         </div>
 
         {/* 3D View */}
-        <div className="flex-1 w-full flex items-center justify-center p-2 relative">
-          <div className="w-full h-full max-h-[80vh] bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden relative">
-            <Canvas shadows dpr={[1, 2]}>
-              <Suspense fallback={null}>
-                <Scene board={board} currentPiece={currentPiece} />
-              </Suspense>
-            </Canvas>
+        <div className="absolute inset-0 z-10">
+          <Canvas shadows dpr={[1, 2]}>
+            <Suspense fallback={null}>
+              <Scene board={board} currentPiece={currentPiece} />
+            </Suspense>
+          </Canvas>
 
-            {/* Overlays */}
-            <AnimatePresence>
-              {isPaused && !gameOver && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-xl"
-                >
-                  <div className="text-center">
-                    <Pause className="w-16 h-16 text-white mx-auto mb-4" />
-                    <h2 className="font-display text-4xl font-bold text-white tracking-widest">PAUSADO</h2>
-                  </div>
-                </motion.div>
-              )}
+          {/* Overlays */}
+          <AnimatePresence>
+            {isPaused && !gameOver && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+              >
+                <div className="text-center">
+                  <Pause className="w-16 h-16 text-white mx-auto mb-4" />
+                  <h2 className="font-display text-4xl font-bold text-white tracking-widest">PAUSADO</h2>
+                </div>
+              </motion.div>
+            )}
 
-              {gameOver && (
+            {gameOver && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex items-center justify-center"
+              >
                 <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-20 bg-black/80 backdrop-blur-md flex items-center justify-center rounded-xl"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-center p-10 glass-panel border border-red-500/30 rounded-3xl max-w-sm w-full"
                 >
-                  <motion.div 
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="text-center p-10 glass-panel border border-red-500/30 rounded-3xl max-w-sm w-full"
+                  <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-6" />
+                  <h2 className="font-display text-4xl font-bold text-white mb-4">FIM DE JOGO</h2>
+                  <p className="text-gray-300 text-lg mb-8">Sua pontuação final:<br/><span className="text-cyan-400 font-mono text-4xl font-bold">{score}</span></p>
+                  <button 
+                    onClick={resetGame}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:from-cyan-400 hover:to-blue-400 transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
                   >
-                    <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-6" />
-                    <h2 className="font-display text-4xl font-bold text-white mb-4">FIM DE JOGO</h2>
-                    <p className="text-gray-300 text-lg mb-8">Sua pontuação final:<br/><span className="text-cyan-400 font-mono text-4xl font-bold">{score}</span></p>
-                    <button 
-                      onClick={resetGame}
-                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:from-cyan-400 hover:to-blue-400 transition-all shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
-                    >
-                      Jogar Novamente
-                    </button>
-                  </motion.div>
+                    Jogar Novamente
+                  </button>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Controls */}

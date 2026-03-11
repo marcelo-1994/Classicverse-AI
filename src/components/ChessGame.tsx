@@ -376,28 +376,26 @@ export function ChessGame({ onBack }: ChessGameProps) {
       </div>
 
       {/* 3D Canvas */}
-      <div className="w-full flex-1 flex items-center justify-center p-2 relative z-10">
-        <div className="aspect-square w-full h-full max-h-[80vh] bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
-          <Canvas shadows dpr={[1, 2]}>
-            <Suspense fallback={null}>
-              <PerspectiveCamera makeDefault position={[0, 10, 8]} fov={45} />
-              <OrbitControls enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.5} minDistance={5} maxDistance={15} />
-              <ambientLight intensity={0.6} />
-              <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
-              <Environment preset="city" />
-              
-              <Board3D game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
-              
-              {/* Reflective surface */}
-              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
-                <planeGeometry args={[8, 8]} />
-                <meshStandardMaterial color="white" transparent opacity={0.1} roughness={0.1} metalness={0.1} />
-              </mesh>
-              
-              <ContactShadows position={[0, -0.05, 0]} opacity={0.4} scale={15} blur={2} far={10} />
-            </Suspense>
-          </Canvas>
-        </div>
+      <div className="absolute inset-0 z-10">
+        <Canvas shadows dpr={[1, 2]}>
+          <Suspense fallback={null}>
+            <PerspectiveCamera makeDefault position={[0, 10, 8]} fov={45} />
+            <OrbitControls enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.5} minDistance={5} maxDistance={15} />
+            <ambientLight intensity={0.6} />
+            <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
+            <Environment preset="city" />
+            
+            <Board3D game={game} onSquareClick={onSquareClick} selectedSquare={selectedSquare} />
+            
+            {/* Reflective surface */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+              <planeGeometry args={[20, 20]} />
+              <meshStandardMaterial color="white" transparent opacity={0.05} roughness={0.1} metalness={0.1} />
+            </mesh>
+            
+            <ContactShadows position={[0, -0.05, 0]} opacity={0.4} scale={15} blur={2} far={10} />
+          </Suspense>
+        </Canvas>
       </div>
 
       {/* HUD Overlay */}

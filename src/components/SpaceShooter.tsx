@@ -467,19 +467,17 @@ export function SpaceShooter({ onBack }: SpaceShooterProps) {
         </div>
 
         {/* 3D View */}
-        <div className="w-full flex-1 flex items-center justify-center p-2 relative">
-          <div className="w-full h-full max-h-[80vh] bg-[#2d1b0e] rounded-lg shadow-2xl border-4 border-[#3d2b1e] overflow-hidden">
-            <Canvas shadows dpr={[1, 2]}>
-              <Suspense fallback={null}>
-                <Scene 
-                  playerPos={playerPos} 
-                  enemies={enemies} 
-                  bullets={bullets} 
-                  gameState={gameState} 
-                />
-              </Suspense>
-            </Canvas>
-          </div>
+        <div className="absolute inset-0 z-10">
+          <Canvas shadows dpr={[1, 2]}>
+            <Suspense fallback={null}>
+              <Scene 
+                playerPos={playerPos} 
+                enemies={enemies} 
+                bullets={bullets} 
+                gameState={gameState} 
+              />
+            </Suspense>
+          </Canvas>
         </div>
 
         {/* Overlays */}
